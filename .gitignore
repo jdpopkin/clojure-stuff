@@ -5,6 +5,7 @@ pom.xml
 /.lein-failures
 /.lein-env
 /checkouts
+/resources/.env
 /.env
 /target
 /.lein-repl-history
