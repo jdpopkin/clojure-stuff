@@ -7,14 +7,28 @@
             [environ.core :refer [env]]
             [camel-snake-kebab.core :as kebab]
             [clojure.java.jdbc :as db]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [clojure-getting-started.stories :as stories]
+            [clj-http.client :as client]))
 
 (def sample (env :sample "sample-string-thing"))
-(def key (env :riot-key) (slurp (io/resource ".env/riot")))
+(def key (env :riot-key (slurp (io/resource ".env/riot"))))
+(def na-url (str "https://na.api.pvp.net/api/lol/na/v2.5/league/challenger?type=RANKED_SOLO_5x5&api_key=" key))
 (def db-spec {:classname "org.postgresql.Driver"
               :subprotocol "postgresql"
               :subname "///yoloq"
               :user "yoloq"})
+
+(defn fetch-challenger []
+  (client/get na-url {:as :json}))
+
+(defn add-index [coll]
+  "Add an :index to each item in the collection which is its
+  index in the collection."
+  (reduce #(conj %1 (assoc %2 :index (count %1))) [] coll))
+
+(defn prettify-challengers [challengers]
+  (add-index (sort-by :leaguePoints (:entries (json/read-str (:body challengers) :key-fn keyword)))))
 
 (defn splash []
   {:status 200
